@@ -72,9 +72,18 @@ Conversation link: https://chatgpt.com/c/68b0b720-700c-8326-a5a6-06f649429a05
 
 ---
 
+## Updates in Latest Version
+- Improved **UI/UX**:
+  - Modern gradient background and polished recipe cards
+  - Enhanced modal with blur effect, shadows, and animations
+  - Added **empty state illustration** for better first-time user experience
+- Improved **Responsive Design** for mobile, tablet, and desktop.
+
 ## 🚀 Getting Started (Local)
 ```bash
 git clone <your-repo-url>
 cd recipe-ideas
 npm install
 npm start
+
+
