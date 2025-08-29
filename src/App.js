@@ -1,30 +1,38 @@
+// Import React hooks and styles
 import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
+  // State for main search input (ingredients to include)
   const [ingredient, setIngredient] = useState("");
+  // State for excluding ingredients
   const [excludeIngredient, setExcludeIngredient] = useState("");
+  // State for cooking time filter
   const [timeFilter, setTimeFilter] = useState("");
 
+  // Recipe data and UI states
   const [recipes, setRecipes] = useState([]);
   const [error, setError] = useState("");
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
+  // Dropdown filter data
   const [categories, setCategories] = useState([]);
   const [areas, setAreas] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedArea, setSelectedArea] = useState("");
 
-  // Fetch categories and areas on load
+  // 🔹 Fetch available categories and cuisines (areas) on app load
   useEffect(() => {
     const fetchFilters = async () => {
       try {
+        // Fetch categories
         const catRes = await fetch(
           "https://www.themealdb.com/api/json/v1/1/list.php?c=list"
         );
         const catData = await catRes.json();
         setCategories(catData.meals);
 
+        // Fetch areas (cuisines)
         const areaRes = await fetch(
           "https://www.themealdb.com/api/json/v1/1/list.php?a=list"
         );
@@ -37,7 +45,7 @@ function App() {
     fetchFilters();
   }, []);
 
-  // Fetch recipes by ingredients
+  // 🔹 Fetch recipes by ingredient(s)
   const fetchRecipes = async () => {
     if (!ingredient) {
       setError("Please enter at least one ingredient.");
@@ -54,7 +62,7 @@ function App() {
       if (data.meals) {
         let meals = data.meals;
 
-        // Apply exclude filter (remove meals that contain excluded ingredient)
+        // Apply "exclude ingredient" filter
         if (excludeIngredient) {
           const detailedMeals = await Promise.all(
             meals.map(async (meal) => {
@@ -66,6 +74,7 @@ function App() {
             })
           );
 
+          // Filter meals that do NOT include the excluded ingredient
           meals = detailedMeals.filter(
             (meal) =>
               meal &&
@@ -76,11 +85,10 @@ function App() {
           );
         }
 
-        // Apply time filter (mocked)
+        // Apply "cooking time" filter (mocked with random times)
         if (timeFilter) {
           meals = meals.filter((meal) => {
-            // Assign random time (20–90 mins) for mock
-            const cookTime = 20 + Math.floor(Math.random() * 70);
+            const cookTime = 20 + Math.floor(Math.random() * 70); // mock cooking time
             if (timeFilter === "quick") return cookTime < 30;
             if (timeFilter === "medium") return cookTime >= 30 && cookTime <= 60;
             if (timeFilter === "long") return cookTime > 60;
@@ -88,7 +96,9 @@ function App() {
           });
         }
 
+        // Save filtered meals
         setRecipes(meals);
+
         if (meals.length === 0) {
           setError("No recipes match the selected filters.");
         }
@@ -101,13 +111,14 @@ function App() {
     }
   };
 
-  // Apply category/area filter combined
+  // 🔹 Apply category + area filters (runs whenever dropdown values change)
   useEffect(() => {
     const applyFilters = async () => {
       try {
         setError("");
         let url = "";
 
+        // Build filter URL
         if (selectedCategory) {
           url = `https://www.themealdb.com/api/json/v1/1/filter.php?c=${selectedCategory}`;
         } else if (selectedArea) {
@@ -120,7 +131,7 @@ function App() {
         const data = await res.json();
         let meals = data.meals || [];
 
-        // If both filters are chosen, refine manually
+        // If BOTH filters are selected → refine results
         if (selectedCategory && selectedArea) {
           const detailedMeals = await Promise.all(
             meals.map(async (meal) => {
@@ -149,7 +160,7 @@ function App() {
     applyFilters();
   }, [selectedCategory, selectedArea]);
 
-  // Fetch recipe details by ID
+  // 🔹 Fetch recipe details (for modal view)
   const fetchRecipeDetails = async (id) => {
     try {
       const res = await fetch(
@@ -168,7 +179,7 @@ function App() {
     <div className="App">
       <h1>🍳 Recipe Ideas</h1>
 
-      {/* Search + Filters */}
+      {/* 🔍 Search + Filters (Include/Exclude + Time) */}
       <div className="search-box">
         <input
           type="text"
@@ -194,7 +205,7 @@ function App() {
         <button onClick={fetchRecipes}>Search</button>
       </div>
 
-      {/* Filters */}
+      {/* 🎛 Category & Cuisine Filters */}
       <div className="filters">
         <select
           value={selectedCategory}
@@ -221,10 +232,22 @@ function App() {
         </select>
       </div>
 
-      {/* Error Message */}
+      {/* ⚠ Error Messages */}
       {error && <p className="error">{error}</p>}
 
-      {/* Recipes List */}
+      {/* 🌀 Empty State (before searching) */}
+      {recipes.length === 0 && !error && (
+        <div className="empty-state">
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/706/706164.png"
+            alt="Cooking illustration"
+          />
+          <h2>Discover Delicious Recipes 🍲</h2>
+          <p>Enter an ingredient above and find amazing dishes to cook today!</p>
+        </div>
+      )}
+
+      {/* 🥗 Recipe Cards Grid */}
       <div className="recipes">
         {recipes.map((meal) => (
           <div
@@ -238,13 +261,16 @@ function App() {
         ))}
       </div>
 
-      {/* Recipe Details Modal */}
+      {/* 🍲 Recipe Details Modal */}
       {selectedRecipe && (
         <div className="modal">
           <div className="modal-content">
+            {/* Close Button */}
             <span className="close" onClick={() => setSelectedRecipe(null)}>
               &times;
             </span>
+
+            {/* Recipe Info */}
             <h2>{selectedRecipe.strMeal}</h2>
             <img
               src={selectedRecipe.strMealThumb}
@@ -255,6 +281,8 @@ function App() {
               <strong>Category:</strong> {selectedRecipe.strCategory} |{" "}
               <strong>Area:</strong> {selectedRecipe.strArea}
             </p>
+
+            {/* Ingredients List */}
             <h3>Ingredients:</h3>
             <ul>
               {Array.from({ length: 20 }, (_, i) => i + 1)
@@ -269,8 +297,12 @@ function App() {
                   </li>
                 ))}
             </ul>
+
+            {/* Instructions */}
             <h3>Instructions:</h3>
             <p>{selectedRecipe.strInstructions}</p>
+
+            {/* Optional YouTube Link */}
             {selectedRecipe.strYoutube && (
               <p>
                 <a

@@ -1,11 +1,25 @@
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #fff8f0, #ffe5d9);
+  font-family: "Segoe UI", Arial, sans-serif;
+  transition: background 0.5s ease-in-out;
+}
+
 .App {
   text-align: center;
-  font-family: Arial, sans-serif;
   padding: 20px;
 }
 
+/* 🔍 Search Box */
 .search-box {
   margin: 20px;
+  background: #fffaf6;
+  padding: 15px 20px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+  animation: fadeIn 0.8s ease-in-out;
 }
 
 .search-box input {
@@ -14,49 +28,77 @@
   margin-right: 10px;
   border: 1px solid #ccc;
   border-radius: 8px;
+  transition: border 0.3s;
+}
+
+.search-box input:focus {
+  outline: none;
+  border: 1px solid #ff7043;
+  box-shadow: 0 0 5px rgba(255,112,67,0.4);
 }
 
 .search-box button {
-  padding: 10px 15px;
+  padding: 10px 18px;
+  margin-left: 0.8rem;
   background-color: #ff7043;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s, transform 0.2s;
 }
 
 .search-box button:hover {
   background-color: #e64a19;
+  transform: scale(1.05);
 }
 
+/* ⚠ Error */
 .error {
-  color: red;
+  color: #d32f2f;
   font-weight: bold;
+  margin-top: 10px;
 }
 
+/* 🥗 Recipe Grid */
 .recipes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-top: 25px;
+  padding: 0 10px;
+  animation: fadeIn 1s ease-in-out;
 }
 
 .recipe-card {
-  border: 1px solid #ddd;
-  padding: 10px;
-  border-radius: 10px;
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #eee;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.08);
+  background: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.recipe-card:hover {
+  transform: translateY(-8px) scale(1.04);
+  box-shadow: 4px 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 .recipe-card img {
   width: 100%;
   border-radius: 10px;
+  object-fit: cover;
 }
 
 .recipe-card h3 {
-  margin: 10px 0;
+  margin: 12px 0;
+  font-size: 16px;
+  color: #333;
 }
-/* Modal overlay */
+
+/* 🍲 Modal */
 .modal {
   position: fixed;
   top: 0;
@@ -67,13 +109,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(5px);
   z-index: 1000;
 }
 
-/* Modal content box */
 .modal-content {
-  background: #ffffff;
+  background: #ffffff url("https://www.transparenttextures.com/patterns/cream-pixels.png");
   padding: 24px;
   border-radius: 16px;
   max-width: 650px;
@@ -81,11 +122,9 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.25);
-  animation: fadeInUp 0.3s ease-in-out;
-  font-family: "Segoe UI", Tahoma, sans-serif;
+  animation: fadeInUp 0.4s ease-in-out;
 }
 
-/* Close button */
 .close {
   font-size: 26px;
   font-weight: bold;
@@ -99,34 +138,23 @@
   color: #e63946;
 }
 
-/* Recipe image */
 .detail-img {
   width: 70%;
-  height: auto;
   border-radius: 12px;
   margin: 18px 0;
   object-fit: cover;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
 }
 
-/* Headings */
-.modal-content h2 {
-  margin-bottom: 12px;
-  font-size: 24px;
-  font-weight: bold;
-  color: #222;
-}
-
-/* Ingredients & steps list */
+/* Ingredients List */
 .modal-content ul {
   list-style: none;
   padding-left: 0;
-  margin: 15px 0;
 }
 
 .modal-content ul li {
   margin: 6px 0;
-  padding-left: 20px;
+  padding-left: 22px;
   position: relative;
   font-size: 15px;
   color: #333;
@@ -134,32 +162,187 @@
 
 .modal-content ul li::before {
   content: "✔";
-  position: initial;
-  left: 13rem;
+  position: inline;
+  left: 0;
   color: #4CAF50;
-  font-size: 17px;
+  font-size: 16px;
 }
 
-/* Animation */
-@keyframes fadeInUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0px);
-    opacity: 1;
-  }
-}
-
-/* filter */
+/* 🎛 Filters */
 .filters {
   margin: 15px;
+  background: #fffaf6;
+  padding: 12px 18px;
+  border-radius: 12px;
+  display: inline-block;
+  box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
+  animation: fadeIn 1s ease-in-out;
 }
 
 .filters select {
-  padding: 8px;
+  padding: 8px 12px;
   margin: 0 10px;
   border-radius: 8px;
   border: 1px solid #ccc;
+  transition: border 0.3s;
+}
+
+.filters select:focus {
+  outline: none;
+  border-color: #ff7043;
+  box-shadow: 0 0 5px rgba(255,112,67,0.4);
+}
+
+/* Empty State */
+.empty-state {
+  margin-top: 60px;
+  text-align: center;
+  color: #444;
+  animation: fadeIn 1.2s ease-in-out;
+}
+
+.empty-state img {
+  width: 190px;
+  opacity: 0.9;
+  margin-bottom: 15px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.empty-state h2 {
+  font-size: 22px;
+  font-weight: bold;
+  color: #ff7043;
+}
+
+.empty-state p {
+  font-size: 16px;
+  color: #666;
+}
+
+/*  Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+
+
+/*  Small screens (phones) */
+@media (max-width: 600px) {
+  .search-box {
+    flex-direction: column;
+    padding: 12px;
+    width: 90%;
+  }
+
+  .search-box input {
+    width: 90%;
+    margin: 8px 0;
+  }
+
+  .search-box button {
+    margin-top: 0.8rem;
+    height: 2rem;
+    width:30%;
+  }
+
+  .filters {
+    flex-direction: column; /* stack vertically */
+    align-items: stretch;   /* full width */
+    width: 90%;
+  }
+
+  .filters select {
+    width: 50%;   /* full width dropdowns */
+    margin: 5px 0; /* spacing between them */
+  }
+
+  .recipes {
+    grid-template-columns: 1fr; /* 1 column on mobile */
+    gap: 15px;
+  }
+
+  .recipe-card {
+    padding: 10px;
+  }
+
+  .detail-img {
+    width: 100%; /* modal image full width on mobile */
+  }
+
+  .modal-content {
+    width: 90%;
+    padding: 18px;
+  }
+
+  .empty-state img {
+    width: 140px;
+  }
+
+  .empty-state h2 {
+    font-size: 18px;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+  }
+}
+
+/*  Medium screens (tablets) */
+@media (min-width: 601px) and (max-width: 900px) {
+  .search-box {
+    width: 80%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .search-box input {
+    flex: 1;
+    min-width: 180px;
+    margin-bottom: 8px;
+  }
+
+  .search-box button {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .filters {
+    margin: 12px auto;
+    width: 80%;
+    text-align: center;
+  }
+
+  .recipes {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  }
+
+  .modal-content {
+    width: 85%;
+  }
+}
+
+/*  Large screens (desktop) */
+@media (min-width: 901px) {
+  .recipes {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .search-box {
+    width: auto;
+  }
+
+  .filters {
+    width: auto;
+  }
 }
