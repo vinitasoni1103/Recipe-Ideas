@@ -1,71 +1,89 @@
-# Recipe-Ideas
-# Getting Started with Create React App
+# 🍳 Recipe Ideas (Taylor’s Kitchen Helper)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+🌐 **Live Demo**  
+CodeSandbox/StackBlitz: https://recipeeideas.netlify.app/  
 
-## Available Scripts
+A lightweight React app that helps Taylor decide what to cook based on **what’s on hand**, **mood**, and **time**.
 
-In the project directory, you can run:
+## ✨ Features
+- **Include ingredients** (comma-separated) → find matching meals
+- **Exclude ingredient** → filter out unwanted items (e.g., peanuts)
+- **Cooking time filter** → Quick (<30m), Medium (30–60m), Long (>60m) *(mocked)*
+- **Category & Cuisine filters** → work independently and together
+- **Recipe details modal** → ingredients, instructions, category, area, YouTube link
+- **Responsive UI** → clean grid + polished modal
+- **Error handling** → friendly messages for empty/no results/network issues
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🧰 Tech Stack
+- **React** (Create React App)
+- **CSS** (plain `App.css`)
+- **State:** React `useState`, `useEffect`
+- **Fetch:** native `fetch`
+- **API:** [TheMealDB](https://www.themealdb.com/)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 🔌 API Endpoints Used
+- List Categories: `list.php?c=list`
+- List Areas: `list.php?a=list`
+- Filter by Ingredient(s): `filter.php?i={commaSeparatedIngredients}`
+- Filter by Category: `filter.php?c={category}`
+- Filter by Area: `filter.php?a={area}`
+- Lookup Details: `lookup.php?i={idMeal}`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+🧪 **Testing Checklist**  
+- Ingredient search `chicken,onion` returns results  
+- Exclude `rice` removes matching meals  
+- Category + Cuisine together narrow results  
+- Time filter changes results (mocked)  
+- Modal opens, shows details & YouTube link  
+- Errors: empty input / no results / network → friendly messages  
+- Mobile layout remains usable  
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+📝 **Design & Decisions**  
+- Combined filters: API doesn’t support direct AND queries → we fetch one filter then refine locally by fetching details.  
+- Time filter: API lacks cook time → we mock a time range per meal (documented as a limitation).  
+- Simplicity: Used plain CSS for clarity; minimal dependencies.  
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+⚠️ **Limitations**  
+- Cook time is simulated (not API-driven).  
+- Ingredient presence check is based on detailed meal fields returned by TheMealDB.  
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+🗺️ **Future Improvements**  
+- Persist favorites (localStorage)  
+- Pagination / infinite scroll  
+- Real cook-time metadata from another source  
+- Multi-select chips for include/exclude with clear UX  
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+---
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+📎 **Working with AI**  
+Conversation link: https://chatgpt.com/c/68b0b720-700c-8326-a5a6-06f649429a05 
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Updates in Latest Version
+- Improved **UI/UX**:
+  - Modern gradient background and polished recipe cards
+  - Enhanced modal with blur effect, shadows, and animations
+  - Added **empty state illustration** for better first-time user experience
+- Improved **Responsive Design** for mobile, tablet, and desktop.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🚀 Getting Started (Local)
+```bash
+git clone <your-repo-url>
+cd recipe-ideas
+npm install
+npm start
 
-### Code Splitting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
