@@ -1,28 +1,23 @@
-// Import React hooks and styles
 import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
-  // State for main search input (ingredients to include)
   const [ingredient, setIngredient] = useState("");
-  // State for excluding ingredients
+
   const [excludeIngredient, setExcludeIngredient] = useState("");
-  // State for cooking time filter
+
   const [timeFilter, setTimeFilter] = useState("");
 
-  // Recipe data and UI states
   const [recipes, setRecipes] = useState([]);
   const [error, setError] = useState("");
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Dropdown filter data
   const [categories, setCategories] = useState([]);
   const [areas, setAreas] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedArea, setSelectedArea] = useState("");
 
-  // 🔹 Fetch available categories and cuisines (areas) on app load
   useEffect(() => {
     const fetchFilters = async () => {
       try {
@@ -56,42 +51,65 @@ function App() {
     try {
       setError("");
       setIsLoading(true);
-      const res = await fetch(
+
+      // Step 1: Try filtering by ingredient name
+      let res = await fetch(
         `https://www.themealdb.com/api/json/v1/1/filter.php?i=${ingredient}`
       );
-      const data = await res.json();
+      let data = await res.json();
+      let fromNameSearch = false;
+
+      // Step 2: Fallback — search by meal name if no ingredient match found
+      // (e.g. "pasta" is not an exact MealDB ingredient but IS in meal titles)
+      if (!data.meals) {
+        res = await fetch(
+          `https://www.themealdb.com/api/json/v1/1/search.php?s=${ingredient}`
+        );
+        data = await res.json();
+        fromNameSearch = true;
+      }
 
       if (data.meals) {
         let meals = data.meals;
 
-        // Apply "exclude ingredient" filter (limited to 30 meals to avoid rate-limit issues)
+        // Apply "exclude ingredient" filter
         if (excludeIngredient) {
-          const mealsToCheck = meals.slice(0, 30);
-          const detailedMeals = await Promise.all(
-            mealsToCheck.map(async (meal) => {
-              const res = await fetch(
-                `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`
-              );
-              const details = await res.json();
-              return details.meals ? details.meals[0] : null;
-            })
-          );
-
-          // Filter meals that do NOT include the excluded ingredient
-          meals = detailedMeals.filter(
-            (meal) =>
-              meal &&
-              !Object.values(meal)
-                .join(" ")
-                .toLowerCase()
-                .includes(excludeIngredient.toLowerCase())
-          );
+          if (!fromNameSearch) {
+            // filter.php returns minimal fields only — need detail lookups (capped at 30)
+            const mealsToCheck = meals.slice(0, 30);
+            const detailedMeals = await Promise.all(
+              mealsToCheck.map(async (meal) => {
+                const r = await fetch(
+                  `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`
+                );
+                const details = await r.json();
+                return details.meals ? details.meals[0] : null;
+              })
+            );
+            meals = detailedMeals.filter(
+              (meal) =>
+                meal &&
+                !Object.values(meal)
+                  .join(" ")
+                  .toLowerCase()
+                  .includes(excludeIngredient.toLowerCase())
+            );
+          } else {
+            // search.php already returns full meal details — check directly, no extra calls
+            meals = meals.filter(
+              (meal) =>
+                !Object.values(meal)
+                  .join(" ")
+                  .toLowerCase()
+                  .includes(excludeIngredient.toLowerCase())
+            );
+          }
         }
 
-        // Apply "cooking time" filter (deterministic per meal ID — consistent results)
+        // Apply "cooking time" filter (deterministic per meal ID — 15–89 min range)
         if (timeFilter) {
           meals = meals.filter((meal) => {
-            const cookTime = 15 + (parseInt(meal.idMeal) % 75); // deterministic 15–89 min
+            const cookTime = 15 + (parseInt(meal.idMeal) % 75);
             if (timeFilter === "quick") return cookTime < 30;
             if (timeFilter === "medium") return cookTime >= 30 && cookTime <= 60;
             if (timeFilter === "long") return cookTime > 60;
@@ -99,15 +117,41 @@ function App() {
           });
         }
 
-        // Save filtered meals
-        setRecipes(meals);
+        // Apply area filter via Set intersection (fast, no extra API calls)
+        if (selectedArea) {
+          const areaRes = await fetch(
+            `https://www.themealdb.com/api/json/v1/1/filter.php?a=${selectedArea}`
+          );
+          const areaData = await areaRes.json();
+          if (areaData.meals) {
+            const areaIds = new Set(areaData.meals.map((m) => m.idMeal));
+            meals = meals.filter((m) => areaIds.has(m.idMeal));
+          } else {
+            meals = [];
+          }
+        }
 
+        // Apply category filter via Set intersection (fast, no extra API calls)
+        if (selectedCategory) {
+          const catRes = await fetch(
+            `https://www.themealdb.com/api/json/v1/1/filter.php?c=${selectedCategory}`
+          );
+          const catData = await catRes.json();
+          if (catData.meals) {
+            const catIds = new Set(catData.meals.map((m) => m.idMeal));
+            meals = meals.filter((m) => catIds.has(m.idMeal));
+          } else {
+            meals = [];
+          }
+        }
+
+        setRecipes(meals);
         if (meals.length === 0) {
           setError("No recipes match the selected filters.");
         }
       } else {
         setRecipes([]);
-        setError("No recipes found for this ingredient.");
+        setError("No recipes found. Try a different ingredient or dish name.");
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -116,9 +160,13 @@ function App() {
     }
   };
 
-  // 🔹 Apply category + area filters (runs whenever dropdown values change)
+  // 🔹 Apply category + area filters (only when no ingredient is typed)
+  // When ingredient IS typed, the Search button handles all filters together.
   useEffect(() => {
     const applyFilters = async () => {
+      // Don't compete with ingredient search — let fetchRecipes handle everything
+      if (ingredient) return;
+
       try {
         setError("");
         let url = "";
@@ -137,25 +185,18 @@ function App() {
         const data = await res.json();
         let meals = data.meals || [];
 
-        // If BOTH filters selected → cross-filter via detail lookup (limit to 30 to avoid N+1 overload)
+        // If BOTH filters selected → intersect using a second Set fetch (no N+1)
         if (selectedCategory && selectedArea) {
-          const mealsToCheck = meals.slice(0, 30);
-          const detailedMeals = await Promise.all(
-            mealsToCheck.map(async (meal) => {
-              const res = await fetch(
-                `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`
-              );
-              const details = await res.json();
-              return details.meals ? details.meals[0] : null;
-            })
+          const areaRes = await fetch(
+            `https://www.themealdb.com/api/json/v1/1/filter.php?a=${selectedArea}`
           );
-
-          meals = detailedMeals.filter(
-            (meal) =>
-              meal &&
-              meal.strCategory === selectedCategory &&
-              meal.strArea === selectedArea
-          );
+          const areaData = await areaRes.json();
+          if (areaData.meals) {
+            const areaIds = new Set(areaData.meals.map((m) => m.idMeal));
+            meals = meals.filter((m) => areaIds.has(m.idMeal));
+          } else {
+            meals = [];
+          }
         }
 
         setRecipes(meals);
@@ -170,7 +211,7 @@ function App() {
     };
 
     applyFilters();
-  }, [selectedCategory, selectedArea]);
+  }, [selectedCategory, selectedArea, ingredient]);
 
   // 🔹 Fetch recipe details (for modal view)
   const fetchRecipeDetails = async (id) => {
