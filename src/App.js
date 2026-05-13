@@ -14,6 +14,7 @@ function App() {
   const [recipes, setRecipes] = useState([]);
   const [error, setError] = useState("");
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Dropdown filter data
   const [categories, setCategories] = useState([]);
@@ -54,6 +55,7 @@ function App() {
 
     try {
       setError("");
+      setIsLoading(true);
       const res = await fetch(
         `https://www.themealdb.com/api/json/v1/1/filter.php?i=${ingredient}`
       );
@@ -62,10 +64,11 @@ function App() {
       if (data.meals) {
         let meals = data.meals;
 
-        // Apply "exclude ingredient" filter
+        // Apply "exclude ingredient" filter (limited to 30 meals to avoid rate-limit issues)
         if (excludeIngredient) {
+          const mealsToCheck = meals.slice(0, 30);
           const detailedMeals = await Promise.all(
-            meals.map(async (meal) => {
+            mealsToCheck.map(async (meal) => {
               const res = await fetch(
                 `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`
               );
@@ -85,10 +88,10 @@ function App() {
           );
         }
 
-        // Apply "cooking time" filter (mocked with random times)
+        // Apply "cooking time" filter (deterministic per meal ID — consistent results)
         if (timeFilter) {
           meals = meals.filter((meal) => {
-            const cookTime = 20 + Math.floor(Math.random() * 70); // mock cooking time
+            const cookTime = 15 + (parseInt(meal.idMeal) % 75); // deterministic 15–89 min
             if (timeFilter === "quick") return cookTime < 30;
             if (timeFilter === "medium") return cookTime >= 30 && cookTime <= 60;
             if (timeFilter === "long") return cookTime > 60;
@@ -108,6 +111,8 @@ function App() {
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -127,14 +132,16 @@ function App() {
           return;
         }
 
+        setIsLoading(true);
         const res = await fetch(url);
         const data = await res.json();
         let meals = data.meals || [];
 
-        // If BOTH filters are selected → refine results
+        // If BOTH filters selected → cross-filter via detail lookup (limit to 30 to avoid N+1 overload)
         if (selectedCategory && selectedArea) {
+          const mealsToCheck = meals.slice(0, 30);
           const detailedMeals = await Promise.all(
-            meals.map(async (meal) => {
+            mealsToCheck.map(async (meal) => {
               const res = await fetch(
                 `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`
               );
@@ -152,8 +159,13 @@ function App() {
         }
 
         setRecipes(meals);
+        if (meals.length === 0) {
+          setError("No recipes found for the selected filters.");
+        }
       } catch (err) {
         setError("Failed to apply filters.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -235,8 +247,16 @@ function App() {
       {/* ⚠ Error Messages */}
       {error && <p className="error">{error}</p>}
 
+      {/* 🔄 Loading Spinner */}
+      {isLoading && (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Finding delicious recipes...</p>
+        </div>
+      )}
+
       {/* 🌀 Empty State (before searching) */}
-      {recipes.length === 0 && !error && (
+      {recipes.length === 0 && !error && !isLoading && (
         <div className="empty-state">
           <img
             src="https://cdn-icons-png.flaticon.com/512/706/706164.png"
