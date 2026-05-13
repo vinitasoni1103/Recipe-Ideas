@@ -1,9 +1,9 @@
-# 🍳 Recipe Ideas (Taylor’s Kitchen Helper)
+# 🍳 Recipe Ideas (User's Kitchen Helper)
 
 🌐 **Live Demo**  
 CodeSandbox/StackBlitz: https://recipeeideas.netlify.app/  
 
-A lightweight React app that helps Taylor decide what to cook based on **what’s on hand**, **mood**, and **time**.
+A lightweight React app that helps User decide what to cook based on **what’s on hand**, **mood**, and **time**.
 
 ## ✨ Features
 - **Include ingredients** (comma-separated) → find matching meals
